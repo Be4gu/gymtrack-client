@@ -1,0 +1,65 @@
+/* Actualización de estilos globales para reflejar el diseño Dashdark X */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Inter', 'SF Pro Display', system-ui, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #e5e7eb; /* Texto principal claro */
+  background-color: #1e1e2f; /* Fondo oscuro */
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #1e1e2f; /* Fondo oscuro */
+  color: #e5e7eb; /* Texto principal claro */
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-dark px-6 py-3 rounded hover:bg-secondary transition-all;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-700 text-textPrimary px-4 py-2 rounded hover:bg-gray-600 transition-all;
+  }
+
+  .card {
+    @apply bg-dark border border-gray-700 p-6 rounded-lg transition-shadow hover:shadow-lg;
+  }
+
+  .section-title {
+    @apply text-2xl font-medium mb-6 text-textPrimary;
+  }
+
+  .fade-in {
+    animation: fade-in 0.5s ease-in-out;
+  }
+
+  .transition-all {
+    transition: all 0.3s ease;
+  }
+}
+
+/* Corrección para los estilos de los selectores y eliminación de fondo blanco */
+@layer components {
+  select {
+    @apply bg-gray-800 text-textPrimary border border-gray-700 p-3 w-full rounded focus:outline-none focus:ring-1 focus:ring-primary;
+  }
+
+  select option {
+    @apply bg-gray-800 text-textPrimary;
+  }
+
+  .input-field {
+    @apply bg-gray-800 text-textPrimary border border-gray-700 p-3 w-full focus:outline-none focus:ring-1 focus:ring-primary;
+  }
+}

@@ -1,0 +1,26 @@
+/* Los estilos principales ahora están definidos en index.css con clases utilitarias de Tailwind */
+/* Archivo simplificado para mantener solo los estilos necesarios */
+
+#root {
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Animaciones de carga */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fade-in 0.5s ease-in-out;
+}
+
+/* Transiciones para elementos interactivos */
+.transition-all {
+  transition: all 0.3s ease;
+}
