@@ -16,5 +16,15 @@ export default defineConfig({
         }
       }
     }
+  },
+  base: './', // Esto asegura que las rutas sean relativas
+  server: {
+    port: 3000, // Define un puerto si es necesario para el desarrollo local
+    open: true // Abre automáticamente el navegador
+  },
+  resolve: {
+    alias: {
+      '@': '/src' // Alias común para facilitar la importación
+    }
   }
 })
