@@ -1,12 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'dist',
-    sourcemap: false,
-    minify: 'terser',
+    sourcemap: true,
+    minify: 'esbuild',
     rollupOptions: {
       output: {
         manualChunks: {
@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
       }
     }
   },
-  base: mode === 'production' ? './' : '/', // Rutas relativas solo en producción
+  base: '/', // Usar rutas absolutas para mejor compatibilidad con Vercel
   server: {
     port: 3000,
     open: true
@@ -26,4 +26,4 @@ export default defineConfig(({ mode }) => ({
       '@': '/src'
     }
   }
-}))
+})
