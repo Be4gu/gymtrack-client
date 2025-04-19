@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { API_URL } from '../config/api';
+import { useDeleteWorkout } from '../hooks/useDeleteWorkout';
+import useWorkouts from '../hooks/useWorkouts';
 
 // Lista de ejercicios predefinidos por categoría - se mantiene como referencia
 const EJERCICIOS_POR_CATEGORIA = {
@@ -63,6 +65,8 @@ const WorkoutForm = ({ onWorkoutAdded, existingWorkout }) => {
     'Otros': []
   });
   const [isLoadingExercises, setIsLoadingExercises] = useState(true);
+  const { deleteWorkout } = useDeleteWorkout();
+  const { data: allWorkouts } = useWorkouts();
 
   // Cargar ejercicios personalizados del usuario
   useEffect(() => {
@@ -193,9 +197,14 @@ const WorkoutForm = ({ onWorkoutAdded, existingWorkout }) => {
           weight: parseFloat(ex.weight) || 0,
           notes: ex.notes || ''
         }));
-      
-      console.log('Ejercicios formateados:', validExercises);
-      
+
+      // Si estamos editando un entrenamiento existente y no hay ejercicios, eliminar el entrenamiento
+      if (existingWorkout && validExercises.length === 0) {
+        await deleteWorkout(existingWorkout.id);
+        if (onWorkoutAdded) onWorkoutAdded();
+        return;
+      }
+
       // Configuración de las cabeceras con el token de autenticación
       const config = {
         headers: {
@@ -264,11 +273,8 @@ const WorkoutForm = ({ onWorkoutAdded, existingWorkout }) => {
   const addExercise = () => {
     setExercises([...exercises, { name: '', sets: 3, reps: 8, weight: 0, notes: '' }]);
   };
-
   const removeExercise = (index) => {
-    if (exercises.length === 1) {
-      return; // Siempre mantener al menos un ejercicio
-    }
+    // Permitir eliminar incluso si es el último ejercicio
     const updatedExercises = exercises.filter((_, i) => i !== index);
     setExercises(updatedExercises);
   };
@@ -278,9 +284,33 @@ const WorkoutForm = ({ onWorkoutAdded, existingWorkout }) => {
     return filteredExercises[category] && filteredExercises[category].length > 0;
   };
 
+  // Cambia el nombre del ejercicio y autocompleta si hay histórico
+  const handleExerciseNameChange = (index, value) => {
+    let updatedExercises = [...exercises];
+    updatedExercises[index].name = value;
+    // Si hay histórico, autocompletar
+    if (value && allWorkouts && allWorkouts.length > 0) {
+      // Buscar el último entrenamiento con ese ejercicio
+      const last = allWorkouts
+        .flatMap(w => w.exercises.map(e => ({...e, date: w.date})))
+        .filter(e => e.name === value)
+        .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+      if (last) {
+        updatedExercises[index].sets = last.sets;
+        updatedExercises[index].reps = last.reps;
+        updatedExercises[index].weight = last.weight;
+      } else {
+        updatedExercises[index].sets = 3;
+        updatedExercises[index].reps = 8;
+        updatedExercises[index].weight = 0;
+      }
+    }
+    setExercises(updatedExercises);
+  };
+
   return (
-    <div className="py-8 max-w-2xl mx-auto">
-      <h1 className="section-title uppercase tracking-wider mb-12">
+    <div className="py-4 max-w-full mx-auto px-2">
+      <h1 className="section-title uppercase tracking-wider mb-8 text-lg sm:text-2xl">
         {existingWorkout ? 'AÑADIR EJERCICIOS' : 'NUEVO ENTRENAMIENTO'}
       </h1>
       
@@ -298,18 +328,18 @@ const WorkoutForm = ({ onWorkoutAdded, existingWorkout }) => {
         </div>
       )}
       
-      <form onSubmit={handleSubmit} className="space-y-10">
+      <form onSubmit={handleSubmit} className="space-y-8">
 
         <div>
           <div className="flex justify-between items-end mb-6 flex-col ">
-            <div className="w-full max-w-xs">
+            <div className="w-full ">
               <label className="block text-sm uppercase tracking-wider mb-2 text-gray-500">
                 Filtrar por grupo muscular
               </label>
               <select 
                 value={selectedCategory} 
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="input-field w-full"
+                className="input-field w-full "
                 disabled={isLoadingExercises}
               >
                 <option value="">Todos los ejercicios</option>
@@ -320,27 +350,19 @@ const WorkoutForm = ({ onWorkoutAdded, existingWorkout }) => {
               </select>
             </div>
             
-            <button
-              type="button"
-              onClick={addExercise}
-              className="btn-secondary flex items-center w-full md:w-auto mt-4 md:mt-0"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-              </svg>
-              Añadir ejercicio
-            </button>
+           
           </div>
           
-          <div className="space-y-6">
+          <div className="space-y-4">
             {exercises.map((exercise, index) => (
-              <div key={index} className="card relative group">
+              <div key={index} className="card relative group p-3 sm:p-6">
                 <button 
                   type="button" 
                   onClick={() => removeExercise(index)}
-                  className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-black"
+                  className="absolute top-2 right-2 text-white hover:text-red-400 transition-colors p-2 rounded-full bg-gray-700/80"
+                  aria-label="Eliminar ejercicio"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
                   </svg>
                 </button>
@@ -354,7 +376,7 @@ const WorkoutForm = ({ onWorkoutAdded, existingWorkout }) => {
                     </label>
                     <select
                       value={exercise.name}
-                      onChange={(e) => handleExerciseChange(index, 'name', e.target.value)}
+                      onChange={(e) => handleExerciseNameChange(index, e.target.value)}
                       className="input-field"
                       disabled={isLoadingExercises}
                     >
@@ -393,9 +415,12 @@ const WorkoutForm = ({ onWorkoutAdded, existingWorkout }) => {
                       </label>
                       <input
                         type="number"
-                        min="1"
-                        value={exercise.sets}
-                        onChange={(e) => handleExerciseChange(index, 'sets', parseInt(e.target.value) || 3)}
+                        min="0"
+                        value={exercise.sets === 0 ? '' : exercise.sets}
+                        onChange={e => {
+                          const val = e.target.value === '' ? 0 : parseInt(e.target.value);
+                          handleExerciseChange(index, 'sets', isNaN(val) ? 0 : val);
+                        }}
                         className="input-field"
                       />
                     </div>
@@ -406,9 +431,12 @@ const WorkoutForm = ({ onWorkoutAdded, existingWorkout }) => {
                       </label>
                       <input
                         type="number"
-                        min="1"
-                        value={exercise.reps}
-                        onChange={(e) => handleExerciseChange(index, 'reps', parseInt(e.target.value) || 8)}
+                        min="0"
+                        value={exercise.reps === 0 ? '' : exercise.reps}
+                        onChange={e => {
+                          const val = e.target.value === '' ? 0 : parseInt(e.target.value);
+                          handleExerciseChange(index, 'reps', isNaN(val) ? 0 : val);
+                        }}
                         className="input-field"
                       />
                     </div>
@@ -421,8 +449,11 @@ const WorkoutForm = ({ onWorkoutAdded, existingWorkout }) => {
                         type="number"
                         min="0"
                         step="0.5"
-                        value={exercise.weight}
-                        onChange={(e) => handleExerciseChange(index, 'weight', parseFloat(e.target.value) || 0)}
+                        value={exercise.weight === 0 ? '' : exercise.weight}
+                        onChange={e => {
+                          const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                          handleExerciseChange(index, 'weight', isNaN(val) ? 0 : val);
+                        }}
                         className="input-field"
                       />
                     </div>
@@ -444,11 +475,20 @@ const WorkoutForm = ({ onWorkoutAdded, existingWorkout }) => {
             ))}
           </div>
         </div>
-        
-        <div className="pt-6">
+        <button
+          type="button"
+          onClick={addExercise}
+          className="btn-secondary flex items-center w-full mt-2 text-center py-3 text-base rounded-lg"
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          Añadir ejercicio
+        </button>
+        <div className="pt-4">
           <button
             type="submit"
-            className="btn-primary w-full md:w-auto"
+            className="btn-primary w-full py-3 text-base rounded-lg"
             disabled={isSubmitting}
           >
             {isSubmitting 

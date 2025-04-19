@@ -15,15 +15,15 @@ export default defineConfig({
         }
       }
     }
-  },
-  base: '/', // Usar rutas absolutas para mejor compatibilidad con Vercel
-  server: {
-    port: 3000,
-    open: true
-  },
-  resolve: {
-    alias: {
-      '@': '/src'
-    }
   }
+  // base: '/', // Usar rutas absolutas para mejor compatibilidad con Vercel
+  // server: {
+  //   port: 3000,
+  //   open: true
+  // },
+  // resolve: {
+  //   alias: {
+  //     '@': '/src'
+  //   }
+  // }
 })

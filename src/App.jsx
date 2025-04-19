@@ -7,19 +7,23 @@ import RegisterForm from './components/RegisterForm';
 import Stats from './components/Stats';
 import Profile from './components/Profile';
 import AddExercisesToWorkout from './components/AddExercisesToWorkout';
+import Home from './components/Home';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { API_URL } from './config/api';
 import './App.css';
 
 // Aplicación de estilos globales y consistentes en App.jsx
 function AppContent() {
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
 
   return (
     <div className="flex flex-col min-h-screen bg-dark text-textPrimary">
       <Navbar />
       <main className="container mx-auto px-6 max-w-6xl">
         <Routes>
+          {/* Página Home disponible para todos */}
+          <Route path="/home" element={<Home />} />
+          
+          {/* Rutas protegidas */}
           <Route path="/" element={
             <ProtectedRoute>
               <WorkoutList />
@@ -45,27 +49,37 @@ function AppContent() {
               <Profile />
             </ProtectedRoute>
           } />
+          
+          {/* Rutas para usuarios no autenticados */}
           <Route path="/login" element={
-            <div className="py-12">
-              <LoginForm onLoginSuccess={(result) => {
-                login(result.user, result.token);
-                window.location.href = '/';
-              }} />
-            </div>
+            isAuthenticated ? <Navigate to="/" /> : (
+              <div className="py-12">
+                <LoginForm onLoginSuccess={(result) => {
+                  login(result.user, result.token);
+                  window.location.href = '/';
+                }} />
+              </div>
+            )
           } />
           <Route path="/register" element={
-            <div className="py-12">
-              <RegisterForm onRegisterSuccess={(result) => {
-                login(result.user, result.token);
-                window.location.href = '/';
-              }} />
-            </div>
+            isAuthenticated ? <Navigate to="/" /> : (
+              <div className="py-12">
+                <RegisterForm onRegisterSuccess={(result) => {
+                  login(result.user, result.token);
+                  window.location.href = '/';
+                }} />
+              </div>
+            )
           } />
+          
+          {/* Redirección por defecto a la página Home */}
+          <Route path="*" element={<Navigate to="/home" />} />
         </Routes>
       </main>
-      <footer className="mt-auto py-6 border-t border-gray-700">
-        <div className="container mx-auto px-6 text-center text-sm text-textSecondary">
-          GymTracker © {new Date().getFullYear()} • Diseñado con estilo minimalista
+      <footer className="mt-auto py-3 border-t border-gray-700">
+        <div className="container mx-auto px-2 text-center text-xs text-textSecondary flex flex-col items-center gap-1">
+          <span className="font-bold text-primary text-base tracking-wide">GymTracker</span>
+          <span className="text-xs text-textSecondary">Created by Entrellaves</span>
         </div>
       </footer>
     </div>

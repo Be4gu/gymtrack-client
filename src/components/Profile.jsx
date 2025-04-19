@@ -109,12 +109,12 @@ const Profile = () => {
         </div>
       )}
 
-      <div className="card mb-8">
+      <div className="card mb-8 w-full max-w-full p-4 sm:p-6">
         <h2 className="text-lg font-medium mb-4">Datos personales</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div>
             <span className="text-sm text-textSecondary">Email:</span>
-            <p className="text-textPrimary">{currentUser?.email}</p>
+            <p className="text-textPrimary break-all">{currentUser?.email}</p>
           </div>
           <div>
             <span className="text-sm text-textSecondary">Nombre:</span>
@@ -123,10 +123,8 @@ const Profile = () => {
         </div>
       </div>
 
-      <div className="card">
+      <div className="card w-full max-w-full">
         <h2 className="text-lg font-medium mb-6">Mis ejercicios</h2>
-        
-        {/* Selector de grupo muscular */}
         <div className="mb-8">
           <label className="block text-sm uppercase tracking-wider mb-2 text-textSecondary">
             Selecciona grupo muscular
@@ -134,7 +132,7 @@ const Profile = () => {
           <select
             value={selectedGroup || ''}
             onChange={(e) => setSelectedGroup(Number(e.target.value))}
-            className="input-field max-w-xs"
+            className="input-field max-w-full"
           >
             {muscleGroups.map((group) => (
               <option key={group.id} value={group.id}>
@@ -143,14 +141,12 @@ const Profile = () => {
             ))}
           </select>
         </div>
-
-        {/* Lista de ejercicios */}
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin h-6 w-6 border-2 border-primary rounded-full border-t-transparent"></div>
           </div>
         ) : exercises.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {exercises.map((exercise) => (
               <div key={exercise.id} className="p-4 bg-gray-800 rounded">
                 <div className="flex justify-between items-start">
@@ -174,8 +170,8 @@ const Profile = () => {
 
       {/* Modal para crear ejercicio */}
       {showExerciseCreator && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50">
-          <div className="bg-dark border border-gray-700 rounded-lg p-6 w-full max-w-lg">
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex justify-center items-center p-2">
+          <div className="bg-dark border border-gray-700 rounded-lg p-4 w-full max-w-sm mx-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-medium">Crear ejercicio</h2>
               <button 
