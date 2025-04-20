@@ -18,10 +18,12 @@ export const useGoogleAuth = () => {
 
       if (!idToken) {
         throw new Error('No se recibió un id_token válido de Google')
-      }
+      } // Construir URL sin doble slash
+      const url = `${API_URL.replace(/\/+$/, '')}/auth/google`
 
-      const response = await axios.post(`${API_URL}/auth/google`, {
-        credential: idToken
+      const response = await axios.post(url, {
+        credential: idToken,
+        redirectUrl: import.meta.env.MODE === 'production' ? 'https://gymtrack-client.vercel.app/login' : 'http://localhost:5173/login'
       })
 
       setLoading(false)
